@@ -1,0 +1,32 @@
+ грамматика для парсера
+ WHILE_KW --> "while"
+ OP --> ">" | "<" | "=="
+ VAR_BUL --> TRUE | FALSE
+ START_WHILE --> "\\{"
+ FINISH_WHILE --> "\\}"
+
+ lang --> expr+
+ expr --> VAR ASSIGN_OP expr_value
+ expr_value --> value (OP value)
+ value --> DIGIT | VAR
+
+ expr --> assign | while_keyword
+ assign --> VAR ASSIGN_OP expr_value
+ while_keyword --> WHILE_KW condition_while body_while
+ condition_while --> \\( compare \\) | \\( VAR_BOOL \\)
+ body_while --> START_WHILE expr+ FINISH_WHILE
+ compare --> value OP value
+
+ void expr() {
+   VAR();
+   ASSIGN_OP();
+   expr_value();
+ }
+
+ void VAR() {
+   проверка типа на VAR берю с помощью match след токен
+   если нет, то выдать исключение
+ }
+ для лексера нужно заносить в буфер по одной букве от src и сувать этот буфер в матчер на проверку, как только будет
+ неуспех возвращаемся на один символ назад и слово из буфера записываем в новый токен, буфер очищаем и начинаем заново
+ соответственно в каждую лексему добавить знаки начала и конца строки
