@@ -17,12 +17,13 @@ public class Lexer {
     static List<Token> tokens = new LinkedList<>();
 
     public static void main(String[] args) {
-        String src = "num=(100+1)"; //основная строка
+        String src = "num=((100+1)-(50-22))"; //основная строка
 
         match(src);//вызов основного метода лексера
 
+        System.out.println(src);
         System.out.println("Tokens: ");
-        for(Token t : tokens) { System.out.println(t); }
+        for (Token t : tokens) { System.out.println(t); }
     }
 
     static void match(String src) {
@@ -60,14 +61,10 @@ public class Lexer {
             if (i == length - 1 & buffer.length() == 1) tokens.add(new Token(buffString, buffer)); //условие конечного символа
 
             if (!isValid) { //проверка конца лексемы в строке
-                //System.out.println("проверка связи!");
-                System.out.println(buffer);
 
                 buffer.reverse();
                 buffer.deleteCharAt(0);
                 buffer.reverse();
-
-                //System.out.println(buffer);
 
                 tokens.add(new Token(buffString, buffer));
                 buffer.setLength(0);
@@ -81,12 +78,11 @@ public class Lexer {
 
     static class Token {
         private final String type;
-        private final StringBuffer value;
+        private final StringBuffer value = new StringBuffer("");
 
         public Token(String type, StringBuffer value) {
             this.type = type;
-            this.value = value;
-            System.out.println(this.value);
+            this.value .append(value);
         }
 
         public String toString() {
