@@ -1,5 +1,10 @@
 import java.util.regex.*;
 import java.util.*;
+import java.io.File;
+import java.io.PrintWriter;
+import  java.io.IOException;
+import java.io.FileReader;
+import java.io.BufferedReader;
 
 public class Lexer {
     static Map<String, Pattern> lexems = new HashMap<>();
@@ -7,25 +12,47 @@ public class Lexer {
 
     static { //определение регулярных выражений для лексем
         lexems.put("OP", Pattern.compile("^\\+|-|/|\\*$"));
+        lexems.put("R_BRACKET", Pattern.compile("^\\)$"));
+        lexems.put("L_BRACKET", Pattern.compile("^\\($"));
+
+        lexems.put("ASSIGN_OP", Pattern.compile("^=$"));
+        lexems.put("DIGIT", Pattern.compile("^0|([1-9][0-9]*)$"));
+
         lexems.put("VAR", Pattern.compile("^[a-z][a-z0-9]*$"));
         lexems.put("WHILE_KEYWORD", Pattern.compile("^while$"));
         lexems.put("FOR_KEYWORD", Pattern.compile("^for$"));
         lexems.put("IF_KEYWORD", Pattern.compile("^if$"));
         lexems.put("ELSE_KEYWORD", Pattern.compile("^else$"));
-        lexems.put("ASSIGN_OP", Pattern.compile("^=$"));
-        lexems.put("DIGIT", Pattern.compile("^0|([1-9][0-9]*)$"));
-        lexems.put("R_BRACKET", Pattern.compile("^\\)$"));
-        lexems.put("L_BRACKET", Pattern.compile("^\\($"));
     }
 
     public static void main(String[] args) {
-        String src = "num = ((100+1) - (50-22)) + 90; sum = 100/50;"; //основная строка
+        //String src = "num = ((100+1) - (50-22)) + 90; sum = 100/50;"; //основная строка
+        lexer(Reader()); //вызов основного метода лексера
 
-        lexer(src); //вызов основного метода лексера
-
-        System.out.println(src);
+        System.out.println(Reader());
         System.out.println("Tokens: ");
         for (Token t : tokens) { System.out.println(t); }
+    }
+
+    static String Reader() {
+        String src = "";
+        try {
+            File file = new File("write_your_code_here.txt"); //создание объекта с файлом
+
+            if (!file.exists()) file.createNewFile(); //создание файла, если его нет
+
+            BufferedReader bf = new BufferedReader(new FileReader(file)); //открытие потока BufferReader, с помощью которого будет считываться файл
+            String buffer = "";
+
+            while ((buffer = bf.readLine()) != null) { //считывание одной строки с файла и занесение её в буфер
+                src = src.concat(buffer); //склеивание основной строки с буфером
+            }
+
+            bf.close(); //закрытие потока с файлом
+        } catch (IOException e) { //ловля исключений на открытие и закрытие потока
+            System.out.println("File creating or opening error! " + e);
+        }
+        return src;
     }
 
     static void lexer(String src) {
