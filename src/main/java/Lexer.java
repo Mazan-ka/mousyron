@@ -8,10 +8,12 @@ import java.io.BufferedReader;
 
 public class Lexer {
     static Map<String, Pattern> lexems = new HashMap<>();
+    static Map<String, Pattern> var_lexems = new HashMap<>();
     static List<Token> tokens = new LinkedList<>();
 
     static { //определение регулярных выражений для лексем
         lexems.put("OP", Pattern.compile("^\\+|-|/|\\*$"));
+        lexems.put("OP_BOOL", Pattern.compile("^>|<|==|!|!=$"));
         lexems.put("R_BRACKET", Pattern.compile("^\\)$"));
         lexems.put("L_BRACKET", Pattern.compile("^\\($"));
 
@@ -19,10 +21,12 @@ public class Lexer {
         lexems.put("DIGIT", Pattern.compile("^0|([1-9][0-9]*)$"));
 
         lexems.put("VAR", Pattern.compile("^[a-z][a-z0-9]*$"));
-        lexems.put("WHILE_KEYWORD", Pattern.compile("^while$"));
-        lexems.put("FOR_KEYWORD", Pattern.compile("^for$"));
-        lexems.put("IF_KEYWORD", Pattern.compile("^if$"));
-        lexems.put("ELSE_KEYWORD", Pattern.compile("^else$"));
+
+        var_lexems.put("WHILE_KEYWORD", Pattern.compile("^while$"));
+        var_lexems.put("FOR_KEYWORD", Pattern.compile("^for$"));
+        var_lexems.put("IF_KEYWORD", Pattern.compile("^if$"));
+        var_lexems.put("ELSE_KEYWORD", Pattern.compile("^else$"));
+        var_lexems.put("BOOL_KEYWORD", Pattern.compile("^true|false$"));
     }
 
     public static void main(String[] args) {
@@ -48,7 +52,7 @@ public class Lexer {
                 src = src.concat(buffer); //склеивание основной строки с буфером
             }
 
-            bf.close(); //закрытие потока с файлом
+            bf.close();
         } catch (IOException e) { //ловля исключений на открытие и закрытие потока
             System.out.println("File creating or opening error! " + e);
         }
@@ -81,6 +85,31 @@ public class Lexer {
 
             for (String lexemName : lexems.keySet()) {
                 Pattern p = lexems.get(lexemName);
+                Pattern p_sec = lexems.get("VAR"); //специальный паттерн для var лексем
+                m = p_sec.matcher(buffer);
+
+                if (m.matches()) { //проверка для разделения ключевых слов и простых var лексем
+                    boolean isValid_var = false;
+
+                    for (String lexemName_var : var_lexems.keySet()) {
+                        Pattern p_var = var_lexems.get(lexemName_var);
+                        m = p_var.matcher(buffer);
+
+                        if (m.matches()) { //проверка буфера на соответствие регулярным выражениям
+                            isValid = true;
+                            isValid_var = true;
+                            buffString = lexemName_var;
+                        }
+                    }
+
+                    if (!isValid_var) {
+                        isValid = true;
+                        buffString = "VAR";
+                    }
+
+                    break;
+                }
+
                 m = p.matcher(buffer);
 
                 if (m.matches()) { //проверка буфера на соответствие регулярным выражениям
@@ -94,13 +123,6 @@ public class Lexer {
                 return;
             }
 
-            if (chArray[i+1] == ';') { //Условие конечной лексемы в строке
-                tokens.add(new Token(buffString, buffer));
-                buffer.setLength(0);
-                i++;
-                continue;
-            }
-
             if (!isValid) { //проверка конца лексемы в строке
                 buffer.reverse();
                 buffer.deleteCharAt(0);
@@ -108,7 +130,14 @@ public class Lexer {
 
                 tokens.add(new Token(buffString, buffer));
                 buffer.setLength(0);
-                i--;
+                continue;
+            }
+
+            if (chArray[i+1] == ';') { //Условие конечной лексемы в строке
+                tokens.add(new Token(buffString, buffer));
+                buffer.setLength(0);
+                i++;
+                continue;
             }
 
             i++;
