@@ -1,7 +1,6 @@
 import java.util.regex.*;
 import java.util.*;
 import java.io.File;
-import java.io.PrintWriter;
 import  java.io.IOException;
 import java.io.FileReader;
 import java.io.BufferedReader;
@@ -14,13 +13,13 @@ public class Lexer {
     static { //определение регулярных выражений для лексем
         lexems.put("OP", Pattern.compile("^\\+|-|/|\\*$"));
         lexems.put("OP_BOOL", Pattern.compile("^>|<|==|!|!=$"));
+        lexems.put("ASSIGN_OP", Pattern.compile("^=$"));
+        lexems.put("DIGIT", Pattern.compile("^0|([1-9][0-9]*)$"));
+
         lexems.put("R_BRACKET", Pattern.compile("^\\)$"));
         lexems.put("L_BRACKET", Pattern.compile("^\\($"));
         lexems.put("START_BODY", Pattern.compile("^\\{$"));
         lexems.put("FINISH_BODY", Pattern.compile("^}$"));
-
-        lexems.put("ASSIGN_OP", Pattern.compile("^=$"));
-        lexems.put("DIGIT", Pattern.compile("^0|([1-9][0-9]*)$"));
 
         lexems.put("VAR", Pattern.compile("^[a-z][a-z0-9]*$"));
 
@@ -33,14 +32,19 @@ public class Lexer {
 
     public static void main(String[] args) {
         //String src = "num = ((100+1) - (50-22)) + 90; sum = 100/50;"; //основная строка
-        lexer(Reader()); //вызов основного метода лексера
+        try {
+            lexer(Reader()); //вызов основного метода лексера
 
-        System.out.println(Reader());
-        System.out.println("Tokens: ");
-        for (Token t : tokens) { System.out.println(t); }
+            System.out.println(Reader());
+            System.out.println("Tokens: ");
+            for (Token t : tokens) { System.out.println(t); }
+        }
+        catch (SyntaxException e) {
+            System.out.println("Синтаксическая ошибка!");
+        }
     }
 
-    static String Reader() {
+    static String Reader() throws SyntaxException {
         String src = "";
         try {
             File file = new File("write_your_code_here.txt"); //создание объекта с файлом
@@ -58,6 +62,11 @@ public class Lexer {
         } catch (IOException e) { //ловля исключений на открытие и закрытие потока
             System.out.println("File creating or opening error! " + e);
         }
+
+        if (src.equals(";") || src.equals("") || src.equals(" ")) { //проверка корректности строки
+            throw new SyntaxException();
+        }
+
         return src;
     }
 
@@ -75,7 +84,7 @@ public class Lexer {
 
             buffer.append(chArray[i]);
 
-            if (chArray[i] == ' ' || chArray[i] == ';') { //Пропуск пробелов и точек с запятой в строке
+            if (chArray[i] == ' ' || chArray[i] == ';') { //Пропуск пробелов или точек с запятой в строке
                 buffer.reverse();
                 buffer.deleteCharAt(0);
                 buffer.reverse();
@@ -120,10 +129,10 @@ public class Lexer {
                 }
             }
 
-            if (!isValid & buffString.equals("")) { //проверка корректности строки
-                System.out.println("Ошибка!");
-                return;
-            }
+//            if (!isValid & (buffer.equals("") || buffString.equals(";"))) { //проверка корректности строки
+//                System.out.println("Ошибка!");
+//                return;
+//            }
 
             if (!isValid) { //проверка конца лексемы в строке
                 buffer.reverse();
@@ -146,5 +155,7 @@ public class Lexer {
         }
     }
 }
+
+class SyntaxException extends Exception{}
 
 
