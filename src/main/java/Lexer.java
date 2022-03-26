@@ -20,6 +20,7 @@ public class Lexer {
         lexems.put("L_BRACKET", Pattern.compile("^\\($"));
         lexems.put("START_BODY", Pattern.compile("^\\{$"));
         lexems.put("FINISH_BODY", Pattern.compile("^}$"));
+        lexems.put("COMMENTS", Pattern.compile("^#$"));
 
         lexems.put("VAR", Pattern.compile("^[a-z][a-z0-9]*$"));
 
@@ -129,22 +130,25 @@ public class Lexer {
                 }
             }
 
-//            if (!isValid & (buffer.equals("") || buffString.equals(";"))) { //проверка корректности строки
-//                System.out.println("Ошибка!");
-//                return;
-//            }
-
             if (!isValid) { //проверка конца лексемы в строке
                 buffer.reverse();
                 buffer.deleteCharAt(0);
                 buffer.reverse();
+
+                if (buffString.equals("COMMENTS")) { //условие для нахождения комментария в коде
+                    i--;
+                    while (chArray[i] != ';') i++;
+
+                    buffer.setLength(0);
+                    continue;
+                }
 
                 tokens.add(new Token(buffString, buffer));
                 buffer.setLength(0);
                 continue;
             }
 
-            if (chArray[i+1] == ';') { //Условие конечной лексемы в строке
+            if (chArray[i+1] == ';') { //условие конечной лексемы в строке
                 tokens.add(new Token(buffString, buffer));
                 buffer.setLength(0);
                 i++;
