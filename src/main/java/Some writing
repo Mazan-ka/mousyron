@@ -1,21 +1,24 @@
  грамматика для парсера
- WHILE_KW --> "while"
- OP --> ">" | "<" | "=="
- VAR_BUL --> TRUE | FALSE
- START_WHILE --> "\\{"
- FINISH_WHILE --> "\\}"
+ WHILE_KW -> "while"
+ OP -> ">" | "<" | "=="
+ VAR_BUL -> TRUE | FALSE
+ START_WHILE -> "\\{"
+ FINISH_WHILE -> "\\}"
+ L_BR -> "\\("
+ R_BR -> "\\)"
 
- lang --> expr+
- expr --> VAR ASSIGN_OP expr_value
- expr_value --> value (OP value)
- value --> DIGIT | VAR
+ lang -> expr+
+ expr -> VAR ASSIGN_OP expr_value
+ expr_value -> value (OP value)*
+ value -> DIGIT | VAR
 
- expr --> assign | while_keyword
- assign --> VAR ASSIGN_OP expr_value
- while_keyword --> WHILE_KW condition_while body_while
- condition_while --> \\( compare \\) | \\( VAR_BOOL \\)
- body_while --> START_WHILE expr+ FINISH_WHILE
- compare --> value OP value
+ expr -> assign | while_keyword
+ assign -> VAR ASSIGN_OP expr_value
+
+ while_keyword -> WHILE_KW condition_while body_while
+ condition_while -> \\( compare \\) | \\( VAR_BOOL \\)
+ body_while -> START_WHILE expr+ FINISH_WHILE
+ compare -> value OP value
 
  void expr() {
    VAR();
@@ -27,6 +30,23 @@
    проверка типа на VAR берю с помощью match след токен
    если нет, то выдать исключение
  }
- для лексера нужно заносить в буфер по одной букве от src и сувать этот буфер в матчер на проверку, как только будет
- неуспех возвращаемся на один символ назад и слово из буфера записываем в новый токен, буфер очищаем и начинаем заново
- соответственно в каждую лексему добавить знаки начала и конца строки
+
+  #Грамматика бесконечных скобок:
+  expr_value -> expr_br | (value ((OP value) | OP expr_br))
+  expr_br -> L_BR expr_value R_BR (OP expr_value)*
+
+  Проверка:
+  a = 7 * (100 + b)
+  b = (7 + c) * a
+  a = ((100 + b) * (100 + 3)) * (a + c)
+
+  Сначала из  инфиксной формы в постфиксную алгоритмом дейкстры, далее после преобразования в стек машину для вычисления
+    a = a + 1 + 3 - 100 + 4  ->  a a 1 + 3 + 100 - 4 + =
+
+  Полис для if/for/while:
+  p! - метка безусловный переход на метку p
+  bp!F - условный переход по лжи, b - boolean
+
+  if (a>b) {a=1} else {b=4} ->
+  ab > p1!F a1= p2! b 4 = t (перевёрнутая, признак конца полиса)
+  01 2 3 4  567 8 9 10111213
