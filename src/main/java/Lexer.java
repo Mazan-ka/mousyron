@@ -16,6 +16,8 @@ public class Lexer {
         lexems.put("OP_BOOL", Pattern.compile("^>|<|==|!|!=$"));
         lexems.put("R_BRACKET", Pattern.compile("^\\)$"));
         lexems.put("L_BRACKET", Pattern.compile("^\\($"));
+        lexems.put("START_BODY", Pattern.compile("^\\{$"));
+        lexems.put("FINISH_BODY", Pattern.compile("^}$"));
 
         lexems.put("ASSIGN_OP", Pattern.compile("^=$"));
         lexems.put("DIGIT", Pattern.compile("^0|([1-9][0-9]*)$"));
@@ -88,7 +90,7 @@ public class Lexer {
                 Pattern p_sec = lexems.get("VAR"); //специальный паттерн для var лексем
                 m = p_sec.matcher(buffer);
 
-                if (m.matches()) { //проверка для разделения ключевых слов и простых var лексем
+                if (m.matches()) { //проверка для отделения ключевых слов от названий переменных
                     boolean isValid_var = false;
 
                     for (String lexemName_var : var_lexems.keySet()) {
