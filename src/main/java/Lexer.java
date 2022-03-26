@@ -64,7 +64,7 @@ public class Lexer {
         }
 
         if (src.equals(";") || src.equals("") || src.equals(" ")) { //проверка корректности строки
-            throw new SyntaxException();
+            throw new SyntaxException(); //создание исключения об ошибке синтаксиса
         }
 
         return src;
