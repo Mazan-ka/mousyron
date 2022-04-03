@@ -1,7 +1,7 @@
 import java.util.regex.*;
 import java.util.*;
 import java.io.File;
-import  java.io.IOException;
+import java.io.IOException;
 import java.io.FileReader;
 import java.io.BufferedReader;
 
@@ -31,6 +31,7 @@ public class Lexer {
         var_lexems.put("BOOL_KEYWORD", Pattern.compile("^true|false$"));
     }
 
+    //главная main функция
     public static void main(String[] args) {
         //String src = "num = ((100+1) - (50-22)) + 90; sum = 100/50;"; //основная строка
         try {
@@ -39,13 +40,19 @@ public class Lexer {
             System.out.println(Reader());
             System.out.println("Tokens: ");
             for (Token t : tokens) { System.out.println(t); }
+        } catch (GrammarException e) {
+            System.out.println("Грамматическая ошибка!");
         }
-        catch (SyntaxException e) {
-            System.out.println("Синтаксическая ошибка!");
+
+        //вызов парсера (анализ синтаксиса программы)
+        Parser.parser(tokens);
+        System.out.print("\n");
+        for (Expression s: Parser.expressions) {
+            System.out.println(s);
         }
     }
 
-    static String Reader() throws SyntaxException {
+    static String Reader() throws GrammarException {
         String src = "";
         try {
             File file = new File("write_your_code_here.txt"); //создание объекта с файлом
@@ -65,7 +72,7 @@ public class Lexer {
         }
 
         if (src.equals(";") || src.equals("") || src.equals(" ")) { //проверка корректности строки
-            throw new SyntaxException(); //создание исключения об ошибке синтаксиса
+            throw new GrammarException(); //создание исключения об ошибке синтаксиса
         }
 
         return src;
@@ -160,6 +167,28 @@ public class Lexer {
     }
 }
 
-class SyntaxException extends Exception{}
+class SyntaxException1 extends Exception{
+    private final String Explanation;
+    public SyntaxException1 (String Explanation) {
+        this.Explanation = Explanation;
+    }
+
+    public String getExplanation() {
+        return Explanation;
+    }
+}
+
+class SyntaxException2 extends Exception{
+    private final String Explanation;
+    public SyntaxException2 (String Explanation) {
+        this.Explanation = Explanation;
+    }
+
+    public String getExplanation() {
+        return Explanation;
+    }
+}
+
+class GrammarException extends Exception{}
 
 

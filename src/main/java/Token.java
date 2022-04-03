@@ -4,9 +4,18 @@ public class Token {
 
     public Token(String type, StringBuffer value) {
         this.type = type;
-        this.value .append(value);
+        this.value.append(value);
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public StringBuffer getValue() {
+        return value;
+    }
+
+    @Override
     public String toString() {
         return "Token " + this.type + " : " + this.value + " ";
     }
