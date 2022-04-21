@@ -39,7 +39,7 @@ public class Parser {
         }
 
 //        if (while_keyword(i) && condition_while(i + 1) && body_while(i)) { //проверка на while терминал
-//
+
 //        }
     }
 
