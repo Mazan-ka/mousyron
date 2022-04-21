@@ -14,8 +14,6 @@ public class Parser {
         int length = tokens.size();
 
         for (i = 0; i < length; i++) {
-//            System.out.println(i);
-//            System.out.println(start);
             try {
                 expr();
             } catch (SyntaxException1 e) {
@@ -27,17 +25,13 @@ public class Parser {
     }
 
 
-// _____ПРОВЕРКА НЕТЕРМИНАЛОВ____________________________________________________
+// _____ПРОВЕРКА_НЕТЕРМИНАЛОВ____________________________________________________
 
     static void expr() throws SyntaxException1 {
         start = i;
         if (assign()) { //проверка на терминал присваивания
-            StringBuffer buffer = new StringBuffer();//добавление полученного выражения в list
-//            if (i == start) { //случай вида m = 100;
-//                for (int j = start; j <= 2; j++) {
-//                    buffer.append(tokens.get(j).getValue());
-//                }
-            //случай m = 100 (+1)*
+            StringBuffer buffer = new StringBuffer(); //добавление полученного выражения в list
+
             for (int j = start; j <= i - 1; j++) {
                 buffer.append(tokens.get(j).getValue());
             }
@@ -55,6 +49,13 @@ public class Parser {
     }
 
     static boolean expr_value() throws SyntaxException1 {
+        if (i == tokens.size() - 1 && value()) return true; //случай последнего op_value и конца токенов типа a=100
+
+        int temp = i;
+        if (value() && op_v2(i)) { //случай конца нетерминала assign, но не конца токенов типа a=100
+            return true;
+        } else if (temp != i) i = temp;
+
         if (value()) {
             try {
                 op_value();
@@ -77,7 +78,7 @@ public class Parser {
             }
 
             temp = i;
-            if (op(i) && value() && !op_v2(i)) { //случай последнего op_value и конца токенов
+            if (op(i) && value() && op_v2(i)) { //случай конца нетерминала assign, но не конца токенов
                 return;
             } else if (temp != i) i = temp;
 
@@ -119,7 +120,7 @@ public class Parser {
     }
 
 
-//  _____ПРОВЕРКА ЛЕКСЕМ________________________________________________________
+//  _____ПРОВЕРКА_ЛЕКСЕМ/ТЕРМИНАЛОВ________________________________________________________
 
     static boolean var(int i) throws SyntaxException1 {
         Pattern p = Lexer.lexems.get("VAR");
@@ -163,14 +164,14 @@ public class Parser {
         }
     }
 
-    static boolean op_v2(int i) throws SyntaxException1 { //терминал для проверки конца assign токена
+    static boolean op_v2(int i) throws SyntaxException1 { //терминал для проверки конца assign токена его окончание
         Pattern p = Lexer.lexems.get("OP");
         Matcher m = p.matcher(tokens.get(i).getValue());
 
-        if (!m.matches()) return false;
+        if (!m.matches()) return true;
         else {
             Parser.i++;
-            return true;
+            return false;
         }
     }
 
