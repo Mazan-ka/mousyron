@@ -17,64 +17,72 @@ public class Parser {
 //            System.out.println(i);
 //            System.out.println(start);
             try {
-                start = i;
-                if (assign(i)) { //проверка на первый основной терминал
-                    if (i == start) { //случай вида m = 100;
-                        i += 3;
-                        StringBuffer buffer = new StringBuffer();
-                        for (int j = start; j <= 2; j++) {
-                            buffer.append(tokens.get(j).getValue());
-                        }
-                        expressions.add(new Expression(buffer));
-                    } else { //случай m = 100 (+1)*
-                        StringBuffer buffer = new StringBuffer();
-                        for (int j = start; j <= i; j++) {
-                            buffer.append(tokens.get(j).getValue());
-                        }
-                        expressions.add(new Expression(buffer)); //добавление полученного выражения в list
-                    }
-                }
+                expr();
             } catch (SyntaxException1 e) {
                 System.out.println("\nСинтаксическая ошибка!");
                 System.out.println("-- " + e.getExplanation());
             }
+            i--;
         }
     }
 
 
-// _____ПРОВЕРКА ТЕРМИНАЛОВ____________________________________________________
+// _____ПРОВЕРКА НЕТЕРМИНАЛОВ____________________________________________________
 
-    static boolean assign(int i) throws SyntaxException1 { //основной терминал
-        if (i + 2 > tokens.size()-1) throw new SyntaxException1("Не хватает лексем/терминалов - " + i);
-        else return var(i) & assign_op(i+1) & expr_value(i+2);
+    static void expr() throws SyntaxException1 {
+        start = i;
+        if (assign()) { //проверка на терминал присваивания
+            StringBuffer buffer = new StringBuffer();//добавление полученного выражения в list
+//            if (i == start) { //случай вида m = 100;
+//                for (int j = start; j <= 2; j++) {
+//                    buffer.append(tokens.get(j).getValue());
+//                }
+            //случай m = 100 (+1)*
+            for (int j = start; j <= i - 1; j++) {
+                buffer.append(tokens.get(j).getValue());
+            }
+            expressions.add(new Expression(buffer));
+        }
+
+//        if (while_keyword(i) && condition_while(i + 1) && body_while(i)) { //проверка на while терминал
+//
+//        }
     }
 
-//    static boolean while_key() throws SyntaxException { //основной терминал
-//        return
-//    }
+    static boolean assign() throws SyntaxException1 { //основной терминал
+        if (i + 2 > tokens.size()-1) throw new SyntaxException1("Не хватает лексем/терминалов - " + i);
+        else return var(i) & assign_op(i) & expr_value();
+    }
 
-    static boolean expr_value(int i) throws SyntaxException1 {
-        if (value(i)) {
+    static boolean expr_value() throws SyntaxException1 {
+        if (value()) {
             try {
-                i++;
-                op_value(i);
+                op_value();
             } catch (SyntaxException2 ignored) {}
         }
         return true;
     }
 
-    //пока не обрабатывается ошибка в коде вида: sum = 100 +;
-    static void op_value(int i) throws SyntaxException1, SyntaxException2 {
+    static void op_value() throws SyntaxException1, SyntaxException2 {
         //value(i + 1); /*throw new SyntaxException1("Не хватает лексем/терминалов - " + i);*/
+
+        //проверка ошибки в коде вида: sum = 100 +;
+        int temp = i;
+        if (i == tokens.size() - 1 && op(i))  throw new SyntaxException1("Не хватает лексем/терминалов - " + i);
+        else if (temp != i) i--;
+
         try {
-            if (i + 1 == tokens.size() - 1 && op(i) && value(i + 1)) { //случай последнего op_value и конца токенов
-                Parser.i = i + 1;
+            if (i + 1 == tokens.size() - 1 && op(i) && value()) { //случай последнего op_value и конца токенов
                 return;
             }
 
-            if (i + 1 < tokens.size() - 1 && op(i) && value(i + 1)) { //случай продолжения токенов
-                Parser.i = i + 2;
-                op_value(Parser.i);
+            temp = i;
+            if (op(i) && value() && !op_v2(i)) { //случай последнего op_value и конца токенов
+                return;
+            } else if (temp != i) i = temp;
+
+            if (i + 1 < tokens.size() - 1 && op(i) && value()) { //случай продолжения токенов
+                op_value();
             }
         } catch (SyntaxException1 e) { //обработка положительного исключения
             Parser.i--;
@@ -82,7 +90,7 @@ public class Parser {
         }
     }
 
-    static boolean value(int i) throws SyntaxException1 {
+    static boolean value() throws SyntaxException1 {
         try {
             var(i);
         }
@@ -90,6 +98,24 @@ public class Parser {
             digit(i);
         }
         return true;
+    }
+
+    static boolean condition_while(int i) throws SyntaxException1 {
+        if ((left_bracket(i) && compare(i + 1) && right_bracket(i + 4))) {
+            return true;
+        } else return left_bracket(i) && var_bool(i + 1) && right_bracket(i + 2);
+    }
+
+    static boolean compare(int i) throws SyntaxException1 {
+        return (value() && op_bool(i + 1) && value());
+    }
+
+    static boolean body_while(int i) throws SyntaxException1 {
+        if (start_while(i)) {
+            expr();
+            return finish_while(Parser.i);
+        }
+        return false;
     }
 
 
@@ -101,7 +127,10 @@ public class Parser {
 
         //создание исключения в случае несовпадения лексем или возврат true
         if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
-        else return true;
+        else {
+            Parser.i++;
+            return true;
+        }
     }
 
     static boolean assign_op(int i) throws SyntaxException1 {
@@ -109,7 +138,10 @@ public class Parser {
         Matcher m = p.matcher(tokens.get(i).getValue());
 
         if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
-        else return true;
+        else {
+            Parser.i++;
+            return true;
+        }
     }
 
     static void digit(int i) throws SyntaxException1 {
@@ -117,6 +149,7 @@ public class Parser {
         Matcher m = p.matcher(tokens.get(i).getValue());
 
         if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
+        else Parser.i++;
     }
 
     static boolean op(int i) throws SyntaxException1 {
@@ -124,6 +157,97 @@ public class Parser {
         Matcher m = p.matcher(tokens.get(i).getValue());
 
         if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
-        else return true;
+        else {
+            Parser.i++;
+            return true;
+        }
+    }
+
+    static boolean op_v2(int i) throws SyntaxException1 { //терминал для проверки конца assign токена
+        Pattern p = Lexer.lexems.get("OP");
+        Matcher m = p.matcher(tokens.get(i).getValue());
+
+        if (!m.matches()) return false;
+        else {
+            Parser.i++;
+            return true;
+        }
+    }
+
+    static boolean while_keyword(int i) throws SyntaxException1 {
+        Pattern p = Lexer.var_lexems.get("WHILE_KEYWORD");
+        Matcher m = p.matcher(tokens.get(i).getValue());
+
+        if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
+        else {
+            Parser.i++;
+            return true;
+        }
+    }
+
+    static boolean left_bracket(int i) throws SyntaxException1 {
+        Pattern p = Lexer.lexems.get("L_BRACKET");
+        Matcher m = p.matcher(tokens.get(i).getValue());
+
+        if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
+        else {
+            Parser.i++;
+            return true;
+        }
+    }
+
+    static boolean right_bracket(int i) throws SyntaxException1 {
+        Pattern p = Lexer.lexems.get("R_BRACKET");
+        Matcher m = p.matcher(tokens.get(i).getValue());
+
+        if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
+        else {
+            Parser.i++;
+            return true;
+        }
+    }
+
+    static boolean op_bool(int i) throws SyntaxException1 {
+        Pattern p = Lexer.lexems.get("OP_BOOL");
+        Matcher m = p.matcher(tokens.get(i).getValue());
+
+        if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
+        else {
+            Parser.i++;
+            return true;
+        }
+    }
+
+    static boolean var_bool(int i) throws SyntaxException1 {
+        Pattern p = Lexer.var_lexems.get("BOOL_KEYWORD");
+        Matcher m = p.matcher(tokens.get(i).getValue());
+
+        if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
+        else {
+            Parser.i++;
+            return true;
+        }
+    }
+
+    static boolean start_while(int i) throws SyntaxException1 {
+        Pattern p = Lexer.var_lexems.get("START_BODY");
+        Matcher m = p.matcher(tokens.get(i).getValue());
+
+        if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
+        else {
+            Parser.i++;
+            return true;
+        }
+    }
+
+    static boolean finish_while(int i) throws SyntaxException1 {
+        Pattern p = Lexer.var_lexems.get("FINISH_BODY");
+        Matcher m = p.matcher(tokens.get(i).getValue());
+
+        if (!m.matches()) throw new SyntaxException1("Error: token number - " + i);
+        else {
+            Parser.i++;
+            return true;
+        }
     }
 }
