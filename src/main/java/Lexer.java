@@ -35,9 +35,10 @@ public class Lexer {
     public static void main(String[] args) {
         //String src = "num = ((100+1) - (50-22)) + 90; sum = 100/50;"; //основная строка
         try {
-            lexer(Reader()); //вызов основного метода лексера
+            Lexer l = new Lexer();
+            l.lexer(l.Reader()); //вызов основного метода лексера
 
-            System.out.println(Reader());
+            System.out.println(l.Reader());
             System.out.println("Tokens: ");
             for (Token t : tokens) { System.out.println(t); }
         } catch (GrammarException e) {
@@ -45,14 +46,15 @@ public class Lexer {
         }
 
         //вызов парсера (анализ синтаксиса программы)
-        Parser.parser(tokens);
+        Parser p = new Parser(tokens);
+        p.parser();
         System.out.print("\n");
         for (Expression s: Parser.expressions) {
             System.out.println(s);
         }
     }
 
-    static String Reader() throws GrammarException {
+    String Reader() throws GrammarException {
         String src = "";
         try {
             File file = new File("write_your_code_here.txt"); //создание объекта с файлом
@@ -78,7 +80,7 @@ public class Lexer {
         return src;
     }
 
-    static void lexer(String src) {
+    void lexer(String src) {
         StringBuffer buffer = new StringBuffer("");
         String buffString = "";
         boolean isValid;
