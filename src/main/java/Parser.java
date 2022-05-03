@@ -32,7 +32,7 @@ public class Parser {
 
 // _____ПРОВЕРКА_НЕТЕРМИНАЛОВ____________________________________________________
 
-    void expr(boolean isCalled) throws ParseException {
+    protected void expr(boolean isCalled) throws ParseException {
         if (assign() || while_()) {
             if (isCalled) return;
             StringBuffer buffer = new StringBuffer();
@@ -102,15 +102,15 @@ public class Parser {
         return var() || digit();
     }
 
-    boolean condition_while() {
+    protected boolean condition_while() {
         return left_bracket() && compare() && right_bracket();
     }
 
-    boolean compare() {
+    protected boolean compare() {
         return value() && op_bool() && value();
     }
 
-    boolean body_while() throws ParseException {
+    protected boolean body_while() throws ParseException {
         if (start_while()) {
             expr(true);
             while (!iterator.next().getType().equals("FINISH_BODY")) { //ожидание конца тела цикла while, считывание множества терминалов до '}'
