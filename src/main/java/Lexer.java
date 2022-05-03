@@ -33,8 +33,7 @@ public class Lexer {
 
     //главная main функция
     public static void main(String[] args) {
-        //String src = "num = ((100+1) - (50-22)) + 90; sum = 100/50;"; //основная строка
-        try {
+                try {
             Lexer l = new Lexer();
             l.lexer(l.Reader()); //вызов основного метода лексера
 
@@ -166,28 +165,6 @@ public class Lexer {
 
             i++;
         }
-    }
-}
-
-class SyntaxException1 extends Exception{
-    private final String Explanation;
-    public SyntaxException1 (String Explanation) {
-        this.Explanation = Explanation;
-    }
-
-    public String getExplanation() {
-        return Explanation;
-    }
-}
-
-class SyntaxException2 extends Exception{
-    private final String Explanation;
-    public SyntaxException2 (String Explanation) {
-        this.Explanation = Explanation;
-    }
-
-    public String getExplanation() {
-        return Explanation;
     }
 }
 
