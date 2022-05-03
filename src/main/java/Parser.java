@@ -7,7 +7,7 @@ import java.util.ListIterator;
 public class Parser {
     private final List<Token> tokens;
     private Token currenToken;
-    ListIterator<Token> it;
+    private ListIterator<Token> it;
     private final ListIterator<Token> iterator;
     static List<Expression> expressions = new LinkedList<>();
 
@@ -21,7 +21,7 @@ public class Parser {
         it = tokens.listIterator(); //присваиваем второму итератору лист с токенами
         while (iterator.hasNext()) {
             try {
-                expr(); //вызов основного нетерминала expr
+                expr(false); //вызов основного нетерминала expr
             } catch (ParseException pe) {
                 System.out.println(pe.getMessage() + pe.getErrorOffset());
                 return;
@@ -32,8 +32,9 @@ public class Parser {
 
 // _____ПРОВЕРКА_НЕТЕРМИНАЛОВ____________________________________________________
 
-    void expr() throws ParseException {
-        if (assign() /*|| while_()*/) {
+    void expr(boolean isCalled) throws ParseException {
+        if (assign() || while_()) {
+            if (isCalled) return;
             StringBuffer buffer = new StringBuffer();
             prev(); //двигаем назад основной итератор, для того чтобы конец expression был верный
 
@@ -49,18 +50,28 @@ public class Parser {
         } else {
             throw new ParseException("ASSIGN or WHILE expected, but ", iterator.nextIndex());
         }
-
-//        } else if (while_keyword()) { //нетерминал while
     }
 
-    protected boolean assign() throws ParseException { //основной терминал assign
+    protected boolean assign() throws ParseException { //основной нетерминал assign
         if (var()) {
             if (assign_op()) {
                 return expr_value();
             } else {
                 throw new ParseException("ASSIGN_OP expected, but", iterator.nextIndex());
             }
-        } return false;
+        } else {
+            return false;
+        }
+    }
+
+    protected boolean while_() throws ParseException { //основной нетерминал while
+        if (while_keyword()) {
+            if (condition_while()) {
+                return body_while();
+            } else {
+                throw new ParseException("CONDITION expected, but", iterator.nextIndex());
+            }
+        } else return false;
     }
 
     protected boolean expr_value() throws ParseException {
@@ -78,7 +89,7 @@ public class Parser {
                 if (iterator.hasNext() && op()) {
                     prev();
                     return op_value(); //рекурсивный вызов функции для случаев с большим количеством операций
-                } return true;
+                } else return true;
             } else {
                 throw new ParseException("VAR or DIGIT expected, but", iterator.nextIndex());
             }
@@ -91,38 +102,26 @@ public class Parser {
         return var() || digit();
     }
 
-    /*boolean condition_while() throws SyntaxException1 {
-        int temp = i; //создание временно буфера для возвращения индекса к начальному значению в случае неуспеха
-        if ((left_bracket(i) && compare() && right_bracket(i))) {
-            return true;
-        } else {
-            if (temp != i) i = temp;
-            if (left_bracket(i) && var_bool(i) && right_bracket(i)) {
-                return true;
-            } else {
-                if (temp != i) i = temp;
-                return false;
+    boolean condition_while() {
+        return left_bracket() && compare() && right_bracket();
+    }
+
+    boolean compare() {
+        return value() && op_bool() && value();
+    }
+
+    boolean body_while() throws ParseException {
+        if (start_while()) {
+            expr(true);
+            while (!iterator.next().getType().equals("FINISH_BODY")) { //ожидание конца тела цикла while, считывание множества терминалов до '}'
+                prev();
+                expr(true);
             }
-        }
-    }
-
-    boolean compare() throws SyntaxException1 {
-        int temp = i;
-        if (value() && op_bool(i) && value()) {
             return true;
         } else {
-            if (temp != i) i = temp;
-            return false;
+            throw new ParseException("START WHILE expected, but", iterator.nextIndex());
         }
     }
-
-    boolean body_while() throws SyntaxException1 {
-        if (start_while(i)) {
-            expr();
-            return finish_while(i);
-        }
-        return false;
-    }*/
 
 
 //  _____ПРОВЕРКА_ЛЕКСЕМ/ТЕРМИНАЛОВ________________________________________________________
@@ -144,7 +143,7 @@ public class Parser {
     }
 
     protected boolean while_keyword() {
-        return checkToken("WHILE");
+        return checkToken("WHILE_KEYWORD");
     }
 
     protected boolean left_bracket() {
@@ -172,11 +171,11 @@ public class Parser {
     }
 
     protected void next() {
-        this.currenToken = iterator.next(); //двигаем итератор по листу токенов на один элемент вперед
+        currenToken = iterator.next(); //двигаем итератор по листу токенов на один элемент вперед
     }
 
     protected void prev() {
-        this.currenToken = iterator.previous(); //двигаем итератор по листу токенов на один элемент назад
+        currenToken = iterator.previous(); //двигаем итератор по листу токенов на один элемент назад
     }
 
     protected boolean checkToken(String name) {
