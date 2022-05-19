@@ -32,20 +32,19 @@ public class Parser {
 
 // _____ПРОВЕРКА_НЕТЕРМИНАЛОВ____________________________________________________
 
-    protected void expr(boolean isCalled) throws ParseException {
+    protected void expr (boolean isCalled) throws ParseException {
         if (assign() || while_()) {
             if (isCalled) return;
             StringBuffer buffer = new StringBuffer();
-            prev(); //двигаем назад основной итератор, для того чтобы конец expression был верный
 
             while (true) { //добавление полученного выражения в list
                 buffer.append(it.next().getValue());
-                it.previous(); //двигаем назад второй итератор, для того чтобы начало следующего expression был верный
-                if (it.next().getValue().toString().equals(currenToken.getValue().toString())) { //если два итератора оказались равны, то прекращаем шагать и записываем всё в новый лист
-                    next(); //возвращаем на место основной итератор
-                    break;
+                    //Записываем токены в буфер пока вспомогательный итератор (it) не сравняется с основным (iterator), т.е. достигнет конца одного из expression
+                    if (it.nextIndex() == iterator.nextIndex()) {
+                        break;
                 }
             }
+
             expressions.add(new Expression(buffer));
         } else {
             throw new ParseException("ASSIGN or WHILE expected, but ", iterator.nextIndex());
@@ -59,9 +58,7 @@ public class Parser {
             } else {
                 throw new ParseException("ASSIGN_OP expected, but", iterator.nextIndex());
             }
-        } else {
-            return false;
-        }
+        } else return false;
     }
 
     protected boolean while_() throws ParseException { //основной нетерминал while
@@ -74,16 +71,33 @@ public class Parser {
         } else return false;
     }
 
-    protected boolean expr_value() throws ParseException {
+    protected boolean inf_Parenthesis_val() throws ParseException{ //нетерминал для случаев типа (...) + 100
+        if (left_bracket()) {
+            if (expr_value() && right_bracket()) {
+                while (iterator.hasNext() && op()) expr_value(); //(OP expr_value)*
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean val_inf_Parenthesis() throws ParseException { //нетерминал для случаев типа 100 + (...)
+        boolean hasChain = true;
         if (value()) {
-            if (!iterator.hasNext()) return true;
-            else return op_value();
+            while (iterator.hasNext() && op()) hasChain = (value() || inf_Parenthesis_val()); //(OP (value | inf_Parenthesis_val) )*
+            return hasChain;
+        } else return false;
+    }
+
+    protected boolean expr_value() throws ParseException { //нетерминал для всех выражений в assign
+        if (inf_Parenthesis_val() || val_inf_Parenthesis()) {
+            return true;
         } else {
             throw new ParseException("VAR or DIGIT expected, but", iterator.nextIndex());
         }
     }
 
-    protected boolean op_value() throws ParseException {
+    /*protected boolean op_value() throws ParseException { //старый метод для нетерминала assign
         if (op()) {
             if (value()) {
                 if (iterator.hasNext() && op()) {
@@ -96,7 +110,7 @@ public class Parser {
         } else {
             throw new ParseException("OP expected, but", iterator.nextIndex());
         }
-    }
+    }*/
 
     protected boolean value() {
         return var() || digit();
