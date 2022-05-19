@@ -116,15 +116,15 @@ public class Parser {
         return var() || digit();
     }
 
-    protected boolean condition_while() {
+    protected boolean condition_while() { //нетерминал тела условия цикла while
         return left_bracket() && compare() && right_bracket();
     }
 
-    protected boolean compare() {
+    protected boolean compare() { //нетерминал условия цикла while
         return value() && op_bool() && value();
     }
 
-    protected boolean body_while() throws ParseException {
+    protected boolean body_while() throws ParseException { //нетерминал тела цикла while
         if (start_while()) {
             expr(true);
             while (!iterator.next().getType().equals("FINISH_BODY")) { //ожидание конца тела цикла while, считывание множества терминалов до '}'
