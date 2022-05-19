@@ -1,7 +1,7 @@
 public class Expression {
     private final StringBuffer value = new StringBuffer("");
 
-    public Expression(StringBuffer value) {
+    public Expression (StringBuffer value) {
         this.value.append(value);
     }
 
