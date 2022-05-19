@@ -28,15 +28,14 @@
  }
 
  void VAR() {
-   проверка типа на VAR берю с помощью match след токен
+   проверка типа на VAR беру с помощью match след токен
    если нет, то выдать исключение
  }
 
   #Грамматика бесконечных скобок:
   expr_value -> inf_Parenthesis_val | val_inf_Parenthesis -- заменяет обычный expr_value
-  inf_Parenthesis_val -> L_BR parenthesis_expr_value R_BR (OP expr_value)*
-  val_inf_Parenthesis -> value (OP (value | inf_Parenthesis) )*
-  parenthesis_expr_value -> inf_Parenthesis | (value (OP (value | inf_Parenthesis) )+)
+  inf_Parenthesis_val -> L_BR expr_value R_BR (OP expr_value)*
+  val_inf_Parenthesis -> value (OP (value | inf_Parenthesis_val) )*
 
   Проверка:
   a = 7 * (100 + b)
