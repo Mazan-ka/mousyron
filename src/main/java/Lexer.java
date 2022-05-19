@@ -33,7 +33,7 @@ public class Lexer {
 
     //главная main функция
     public static void main(String[] args) {
-                try {
+        try {
             Lexer l = new Lexer();
             l.lexer(l.Reader()); //вызов основного метода лексера
 
@@ -53,7 +53,7 @@ public class Lexer {
         }
     }
 
-    String Reader() throws GrammarException {
+    protected String Reader() throws GrammarException {
         String src = "";
         try {
             File file = new File("write_your_code_here.txt"); //создание объекта с файлом
@@ -79,7 +79,7 @@ public class Lexer {
         return src;
     }
 
-    void lexer(String src) {
+    protected void lexer(String src) {
         StringBuffer buffer = new StringBuffer("");
         String buffString = "";
         boolean isValid;
