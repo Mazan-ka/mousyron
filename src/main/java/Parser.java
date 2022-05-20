@@ -5,21 +5,21 @@ import java.util.ListIterator;
 
 
 public class Parser {
-    private final List<Token> tokens;
+    private final List<Token> TOKEN;
+    private final ListIterator<Token> ITERATOR;
     private Token currenToken;
     private ListIterator<Token> it;
-    private final ListIterator<Token> iterator;
     static List<Expression> expressions = new LinkedList<>();
 
 
     public Parser(List<Token> tokens) { // конструктор парсера, принимающий лист с токенами от лексера
-        this.tokens = tokens;
-        iterator = tokens.listIterator(); //присваиваем первому итератору лист с токенами
+        this.TOKEN = tokens;
+        ITERATOR = tokens.listIterator(); //присваиваем первому итератору лист с токенами
     }
 
     public void parser() {
-        it = tokens.listIterator(); //присваиваем второму итератору лист с токенами
-        while (iterator.hasNext()) {
+        it = TOKEN.listIterator(); //присваиваем второму итератору лист с токенами
+        while (ITERATOR.hasNext()) {
             try {
                 expr(false); //вызов основного нетерминала expr
             } catch (ParseException pe) {
@@ -32,132 +32,118 @@ public class Parser {
 
 // _____ПРОВЕРКА_НЕТЕРМИНАЛОВ____________________________________________________
 
-    protected void expr (boolean isCalled) throws ParseException {
-        if (assign() || while_() || if_()) {
+    protected void expr(boolean isCalled) throws ParseException {
+        if (assign() || isWhile() || isIf()) {
             if (isCalled) return;
             StringBuffer buffer = new StringBuffer();
 
             while (true) { //добавление полученного выражения в list
                 buffer.append(it.next().getValue());
-                    //Записываем токены в буфер пока вспомогательный итератор (it) не сравняется с основным (iterator), т.е. достигнет конца одного из expression
-                    if (it.nextIndex() == iterator.nextIndex()) {
-                        break;
+                //Записываем токены в буфер пока вспомогательный итератор (it) не сравняется с основным (iterator), т.е. достигнет конца одного из expression
+                if (it.nextIndex() == ITERATOR.nextIndex()) {
+                    break;
                 }
             }
 
             expressions.add(new Expression(buffer));
         } else {
-            throw new ParseException("ASSIGN or WHILE or IF expected, but ", iterator.nextIndex());
+            throw new ParseException("ASSIGN or WHILE or IF expected, but ", ITERATOR.nextIndex());
         }
     }
 
     protected boolean assign() throws ParseException { //основной нетерминал assign
         if (var()) {
-            if (assign_op()) {
-                return expr_value();
+            if (assignOp()) {
+                return exprValue();
             } else {
-                throw new ParseException("ASSIGN_OP expected, but", iterator.nextIndex());
+                throw new ParseException("ASSIGN_OP expected, but", ITERATOR.nextIndex());
             }
         } else return false;
     }
 
-    protected boolean while_() throws ParseException { //основной нетерминал while
-        if (while_keyword()) {
-            if (condition_while()) {
-                return body_while();
+    protected boolean isWhile() throws ParseException { //основной нетерминал while
+        if (whileKeyword()) {
+            if (conditionWhile()) {
+                return bodyWhile();
             } else {
-                throw new ParseException("CONDITION expected, but", iterator.nextIndex());
+                throw new ParseException("CONDITION expected, but", ITERATOR.nextIndex());
             }
         } else return false;
     }
 
-    protected boolean inf_Parenthesis_val() throws ParseException{ //нетерминал для случаев типа (...) + 100
-        if (left_bracket()) {
-            if (expr_value() && right_bracket()) {
-                while (iterator.hasNext() && op()) expr_value(); //(OP expr_value)*
+    protected boolean infParenthesisVal() throws ParseException { //нетерминал для случаев типа (...) + 100
+        if (leftBracket()) {
+            if (exprValue() && rightBracket()) {
+                while (ITERATOR.hasNext() && op()) exprValue(); //(OP expr_value)*
                 return true;
             }
         }
         return false;
     }
 
-    protected boolean val_inf_Parenthesis() throws ParseException { //нетерминал для случаев типа 100 + (...)
+    protected boolean valInfParenthesis() throws ParseException { //нетерминал для случаев типа 100 + (...)
         boolean hasChain = true;
         if (value()) {
-            while (iterator.hasNext() && op()) hasChain = (value() || inf_Parenthesis_val()); //(OP (value | inf_Parenthesis_val) )*
+            while (ITERATOR.hasNext() && op())
+                hasChain = (value() || infParenthesisVal()); //(OP (value | inf_Parenthesis_val) )*
             return hasChain;
         } else return false;
     }
 
-    protected boolean expr_value() throws ParseException { //нетерминал для всех выражений в assign
-        if (inf_Parenthesis_val() || val_inf_Parenthesis()) {
+    protected boolean exprValue() throws ParseException { //нетерминал для всех выражений в assign
+        if (infParenthesisVal() || valInfParenthesis()) {
             return true;
         } else {
-            throw new ParseException("VAR or DIGIT expected, but", iterator.nextIndex());
+            throw new ParseException("VAR or DIGIT expected, but", ITERATOR.nextIndex());
         }
     }
 
-    protected boolean if_() throws ParseException {
-        if (if_keyword()) {
-            if (left_bracket() && compare() && right_bracket()) {
-                if (start_while()) {
+    protected boolean isIf() throws ParseException {
+        if (ifKeyword()) {
+            if (leftBracket() && compare() && rightBracket()) {
+                if (startWhile()) {
                     expr(true);
-                    while (finish_while()) { //ожидание конца тела условия if, считывание множества терминалов до '}'
+                    while (finishWhile()) { //ожидание конца тела условия if, считывание множества терминалов до '}'
                         expr(true);
                     }
 
-                    if (else_keyword()) {
-                        if (start_while()) {
+                    if (elseKeyword()) {
+                        if (startWhile()) {
                             expr(true);
-                            while (finish_while()) { //ожидание конца тела условия else, считывание множества терминалов до '}'
+                            while (finishWhile()) { //ожидание конца тела условия else, считывание множества терминалов до '}'
                                 expr(true);
                             }
                             return true;
                         }
-                        throw new ParseException("START_WHILE expected, but", iterator.nextIndex());
+                        throw new ParseException("START_WHILE expected, but", ITERATOR.nextIndex());
                     } else return true;
                 }
             }
-            throw new ParseException("IF or BRACKET or COMPARE expected, but", iterator.nextIndex());
+            throw new ParseException("IF or BRACKET or COMPARE expected, but", ITERATOR.nextIndex());
         } else return false;
     }
-
-    /*protected boolean op_value() throws ParseException { //старый метод для нетерминала assign
-        if (op()) {
-            if (value()) {
-                if (iterator.hasNext() && op()) {
-                    prev();
-                    return op_value(); //рекурсивный вызов функции для случаев с большим количеством операций
-                } else return true;
-            } else {
-                throw new ParseException("VAR or DIGIT expected, but", iterator.nextIndex());
-            }
-        } else {
-            throw new ParseException("OP expected, but", iterator.nextIndex());
-        }
-    }*/
 
     protected boolean value() {
         return var() || digit();
     }
 
-    protected boolean condition_while() { //нетерминал тела условия цикла while
-        return left_bracket() && compare() && right_bracket();
+    protected boolean conditionWhile() { //нетерминал тела условия цикла while
+        return leftBracket() && compare() && rightBracket();
     }
 
     protected boolean compare() { //нетерминал условия цикла while
-        return value() && op_bool() && value();
+        return value() && opBool() && value();
     }
 
-    protected boolean body_while() throws ParseException { //нетерминал тела цикла while
-        if (start_while()) {
+    protected boolean bodyWhile() throws ParseException { //нетерминал тела цикла while
+        if (startWhile()) {
             expr(true);
-            while (finish_while()/*!iterator.next().getType().equals("FINISH_BODY")*/) { //ожидание конца тела цикла while, считывание множества терминалов до '}'
+            while (finishWhile()/*!iterator.next().getType().equals("FINISH_BODY")*/) { //ожидание конца тела цикла while, считывание множества терминалов до '}'
                 expr(true);
             }
             return true;
         } else {
-            throw new ParseException("START WHILE expected, but", iterator.nextIndex());
+            throw new ParseException("START WHILE expected, but", ITERATOR.nextIndex());
         }
     }
 
@@ -168,8 +154,8 @@ public class Parser {
         return checkToken("VAR");
     }
 
-    protected boolean assign_op() {
-       return checkToken("ASSIGN_OP");
+    protected boolean assignOp() {
+        return checkToken("ASSIGN_OP");
     }
 
     protected boolean digit() {
@@ -180,48 +166,44 @@ public class Parser {
         return checkToken("OP");
     }
 
-    protected boolean while_keyword() {
+    protected boolean whileKeyword() {
         return checkToken("WHILE_KEYWORD");
     }
 
-    protected boolean left_bracket() {
+    protected boolean leftBracket() {
         return checkToken("L_BRACKET");
     }
 
-    protected boolean right_bracket() {
+    protected boolean rightBracket() {
         return checkToken("R_BRACKET");
     }
 
-    protected boolean op_bool() {
+    protected boolean opBool() {
         return checkToken("OP_BOOL");
     }
 
-    protected boolean var_bool(int i) {
-        return checkToken("BOOL_KEYWORD");
-    }
-
-    protected boolean start_while() {
+    protected boolean startWhile() {
         return checkToken("START_BODY");
     }
 
-    protected boolean finish_while() {
+    protected boolean finishWhile() {
         return !checkToken("FINISH_BODY");
     }
 
-    protected boolean if_keyword() {
+    protected boolean ifKeyword() {
         return checkToken("IF_KEYWORD");
     }
 
-    protected boolean else_keyword() {
+    protected boolean elseKeyword() {
         return checkToken("ELSE_KEYWORD");
     }
 
     protected void next() {
-        currenToken = iterator.next(); //двигаем итератор по листу токенов на один элемент вперед
+        currenToken = ITERATOR.next(); //двигаем итератор по листу токенов на один элемент вперед
     }
 
     protected void prev() {
-        currenToken = iterator.previous(); //двигаем итератор по листу токенов на один элемент назад
+        currenToken = ITERATOR.previous(); //двигаем итератор по листу токенов на один элемент назад
     }
 
     protected boolean checkToken(String name) {
