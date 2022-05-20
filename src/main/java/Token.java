@@ -1,6 +1,6 @@
 public class Token {
     private final String type;
-    private final StringBuffer value = new StringBuffer("");
+    private final StringBuffer value = new StringBuffer();
 
     public Token (String type, StringBuffer value) {
         this.type = type;
