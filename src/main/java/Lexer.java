@@ -89,7 +89,7 @@ public class Lexer {
         Matcher m;
 
         while (i < length) { //Проходимся по всем символам в строке src
-            if (i == length - 1 & chArray[i] == ';') break; //Условие конца программы
+            if (i == length - 1 && chArray[i] == ';') break; //Условие конца программы
 
             buffer.append(chArray[i]);
 
