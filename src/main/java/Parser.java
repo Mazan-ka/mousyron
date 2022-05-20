@@ -33,7 +33,7 @@ public class Parser {
 // _____ПРОВЕРКА_НЕТЕРМИНАЛОВ____________________________________________________
 
     protected void expr (boolean isCalled) throws ParseException {
-        if (assign() || while_()) {
+        if (assign() || while_() || if_()) {
             if (isCalled) return;
             StringBuffer buffer = new StringBuffer();
 
@@ -47,7 +47,7 @@ public class Parser {
 
             expressions.add(new Expression(buffer));
         } else {
-            throw new ParseException("ASSIGN or WHILE expected, but ", iterator.nextIndex());
+            throw new ParseException("ASSIGN or WHILE or IF expected, but ", iterator.nextIndex());
         }
     }
 
@@ -97,6 +97,31 @@ public class Parser {
         }
     }
 
+    protected boolean if_() throws ParseException {
+        if (if_keyword()) {
+            if (left_bracket() && compare() && right_bracket()) {
+                if (start_while()) {
+                    expr(true);
+                    while (finish_while()) { //ожидание конца тела условия if, считывание множества терминалов до '}'
+                        expr(true);
+                    }
+
+                    if (else_keyword()) {
+                        if (start_while()) {
+                            expr(true);
+                            while (finish_while()) { //ожидание конца тела условия else, считывание множества терминалов до '}'
+                                expr(true);
+                            }
+                            return true;
+                        }
+                        throw new ParseException("START_WHILE expected, but", iterator.nextIndex());
+                    } else return true;
+                }
+            }
+            throw new ParseException("IF or BRACKET or COMPARE expected, but", iterator.nextIndex());
+        } else return false;
+    }
+
     /*protected boolean op_value() throws ParseException { //старый метод для нетерминала assign
         if (op()) {
             if (value()) {
@@ -127,8 +152,7 @@ public class Parser {
     protected boolean body_while() throws ParseException { //нетерминал тела цикла while
         if (start_while()) {
             expr(true);
-            while (!iterator.next().getType().equals("FINISH_BODY")) { //ожидание конца тела цикла while, считывание множества терминалов до '}'
-                prev();
+            while (finish_while()/*!iterator.next().getType().equals("FINISH_BODY")*/) { //ожидание конца тела цикла while, считывание множества терминалов до '}'
                 expr(true);
             }
             return true;
@@ -181,7 +205,15 @@ public class Parser {
     }
 
     protected boolean finish_while() {
-        return checkToken("FINISH_BODY");
+        return !checkToken("FINISH_BODY");
+    }
+
+    protected boolean if_keyword() {
+        return checkToken("IF_KEYWORD");
+    }
+
+    protected boolean else_keyword() {
+        return checkToken("ELSE_KEYWORD");
     }
 
     protected void next() {
