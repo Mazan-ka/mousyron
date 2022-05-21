@@ -107,7 +107,7 @@ public class Parser {
                         expr(true);
                     }
 
-                    if (elseKeyword()) {
+                    if (ITERATOR.hasNext() && elseKeyword()) {
                         if (startWhile()) {
                             expr(true);
                             while (finishWhile()) { //ожидание конца тела условия else, считывание множества терминалов до '}'
