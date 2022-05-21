@@ -1,10 +1,22 @@
-public class Expression {
-    private final StringBuffer value = new StringBuffer();
+import java.util.*;
 
-    public Expression (StringBuffer value) {
-        this.value.append(value);
+public class Expression {
+    private final List<Token> EXPRESSION = new LinkedList<>();
+
+    public void addToken (Token t) {
+        EXPRESSION.add(t);
+    }
+
+    public Token takeToken(int index) {
+        return EXPRESSION.get(index);
     }
 
     @Override
-    public String toString() {return "Expression: " + value;}
+    public String toString() {
+        StringBuilder expr = new StringBuilder();
+        for (Token token : EXPRESSION) {
+            expr.append(token.getValue());
+        }
+        return "Expression: " + expr;
+    }
 }

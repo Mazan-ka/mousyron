@@ -35,17 +35,17 @@ public class Parser {
     protected void expr(boolean isCalled) throws ParseException {
         if (assign() || isWhile() || isIf()) {
             if (isCalled) return;
-            StringBuffer buffer = new StringBuffer();
+            Expression expression = new Expression();
 
             while (true) { //добавление полученного выражения в list
-                buffer.append(it.next().getValue());
+                expression.addToken(it.next());
                 //Записываем токены в буфер пока вспомогательный итератор (it) не сравняется с основным (iterator), т.е. достигнет конца одного из expression
                 if (it.nextIndex() == ITERATOR.nextIndex()) {
                     break;
                 }
             }
 
-            expressions.add(new Expression(buffer));
+            expressions.add(expression);
         } else {
             throw new ParseException("ASSIGN or WHILE or IF expected, but ", ITERATOR.nextIndex());
         }
