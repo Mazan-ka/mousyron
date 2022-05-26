@@ -33,7 +33,7 @@ public class Parser {
 // _____ПРОВЕРКА_НЕТЕРМИНАЛОВ____________________________________________________
 
     protected void expr(boolean isCalled) throws ParseException {
-        if (assign() || isWhile() || isIf()) {
+        if (assign() || isWhile() || isIf() || isLinkedList()   ) {
             if (isCalled) return;
             Expression expression = new Expression();
 
@@ -69,6 +69,13 @@ public class Parser {
                 throw new ParseException("CONDITION expected, but", ITERATOR.nextIndex());
             }
         } else return false;
+    }
+
+    protected boolean isLinkedList() throws ParseException {
+        if (linkedListKeyword())
+            return linkedListAssign() && var() && linkedListSign();
+        else
+            throw new ParseException("LINKEDLISTKEYWORD expected, but", ITERATOR.nextIndex());
     }
 
     protected boolean infParenthesisVal() throws ParseException { //нетерминал для случаев типа (...) + 100
@@ -197,6 +204,12 @@ public class Parser {
     protected boolean elseKeyword() {
         return checkToken("ELSE_KEYWORD");
     }
+
+    protected boolean linkedListKeyword() { return checkToken("LINKED_LIST_DEF"); }
+
+    protected boolean linkedListAssign() { return checkToken("LIST_ASSIGN"); }
+
+    protected boolean linkedListSign() { return checkToken("LIST_SIGN"); }
 
     protected void next() {
         currenToken = ITERATOR.next(); //двигаем итератор по листу токенов на один элемент вперед

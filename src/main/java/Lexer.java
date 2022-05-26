@@ -20,15 +20,18 @@ public class Lexer {
         LEXEMS.put("L_BRACKET", Pattern.compile("^\\($"));
         LEXEMS.put("START_BODY", Pattern.compile("^\\{$"));
         LEXEMS.put("FINISH_BODY", Pattern.compile("^}$"));
-        LEXEMS.put("COMMENTS", Pattern.compile("^#$"));
+        LEXEMS.put("LIST_ASSIGN", Pattern.compile("^->$"));
+        LEXEMS.put("LIST_SIGN", Pattern.compile("^\\[]?$"));
 
-        LEXEMS.put("VAR", Pattern.compile("^[a-z][a-z0-9]*$"));
+        LEXEMS.put("VAR", Pattern.compile("^[a-zA-Z][a-zA-Z0-9@]*$"));
 
         VAR_LEXEMS.put("WHILE_KEYWORD", Pattern.compile("^while$"));
         VAR_LEXEMS.put("FOR_KEYWORD", Pattern.compile("^for$"));
         VAR_LEXEMS.put("IF_KEYWORD", Pattern.compile("^if$"));
         VAR_LEXEMS.put("ELSE_KEYWORD", Pattern.compile("^else$"));
         VAR_LEXEMS.put("BOOL_KEYWORD", Pattern.compile("^true|false$"));
+        VAR_LEXEMS.put("LINKED_LIST_DEF", Pattern.compile("^GurLinkedList@$"));
+        //VAR_LEXEMS.put("LINKED_LIST_INIT", Pattern.compile("^newGurLinkedList\\(\\)$"));
     }
 
     //главная main функция
@@ -53,6 +56,22 @@ public class Lexer {
         for (Expression s : Parser.expressions) {
             System.out.println(s);
         }
+
+        GurLinkedList<Integer> list = new GurLinkedList<>();
+        GurLinkedList<String> list2 = new GurLinkedList<>();
+        list.addFirst(1);
+        list.addLast(2);
+        list.addLast(3);
+        list.addFirst(5);
+        list.addByIndex(0, 6);
+        list2.addFirst("A");
+        list2.addByIndex(0,"!");
+
+        System.out.println("\nLinkedList\n");
+        for (int i = 0; i < 4; i++) {
+            System.out.println(list.getByIndex(i));
+        }
+        System.out.println(list2.getByIndex(0) + list2.getByIndex(1));
     }
 
     protected String Reader() throws GrammarException {
