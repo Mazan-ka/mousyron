@@ -1,8 +1,13 @@
-while (mun != 2) { ver = m*10};
-##for (fo > 0) {whil = n - 1};
-if (var == 9999) {n = n / 4};
+while (mun != 2) { ver = m*10; rem = w + 21;};
 
-##num = ((100+1) - (50-22)) + 90; 
-##sum = 100/50;
+if (var == 1024) { n = n / 4} else { vlad = molo + dec };
+b= ((m -45) - (30 - p));
 
-##sum = true;
+num = (((100+2) - (50-22)) + 1+ 90 + b + (200 - a));
+a = 7 * 8+(100 + b);
+b = (7 + c) * a + 10 + d;
+sum = 100/50;
+
+if (a >2) {d = b + 1};
+
+GurLinkedList@ -> list[];
