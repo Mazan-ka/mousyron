@@ -57,7 +57,13 @@ public class Lexer {
             System.out.println(s);
         }
 
-        GurLinkedList<Integer> list = new GurLinkedList<>();
+        //вызов интерпретатора
+        Interpreter in = new Interpreter(Parser.expressions);
+        in.interpreter();
+
+        System.out.println("\n" + Interpreter.variables);
+
+        /*GurLinkedList<Integer> list = new GurLinkedList<>();
         GurLinkedList<String> list2 = new GurLinkedList<>();
         list.addFirst(1);
         list.addLast(2);
@@ -71,7 +77,7 @@ public class Lexer {
         for (int i = 0; i < 4; i++) {
             System.out.println(list.getByIndex(i));
         }
-        System.out.println(list2.getByIndex(0) + list2.getByIndex(1));
+        System.out.println(list2.getByIndex(0) + list2.getByIndex(1));*/
     }
 
     protected String Reader() throws GrammarException {
