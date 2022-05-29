@@ -11,6 +11,10 @@ public class Expression {
         return EXPRESSION.get(index);
     }
 
+    public int getSize(){
+        return EXPRESSION.size();
+    }
+
     @Override
     public String toString() {
         StringBuilder expr = new StringBuilder();
