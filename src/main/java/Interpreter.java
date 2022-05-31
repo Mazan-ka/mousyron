@@ -21,9 +21,9 @@ public class Interpreter {
         int priority;
         for (int i = 0; i < expr.getSize(); i++) {
             priority = getPriority(expr.takeToken(i));
-            if (i != 0 && priority == getPriority(expr.takeToken(i-1)) && priority == 0) //проверка на another нетерминалы assign в теле цикла
+            if (i != 0 && priority == getPriority(expr.takeToken(i - 1)) && priority == 0) //проверка на another нетерминалы assign в теле цикла
                 while (!stack.empty()) current.add(stack.pop());
-            if (i != 0 && getPriority(expr.takeToken(i-1)) == -1 && priority == 0) //проверка на another нетерминалы assign со скобками в теле цикла
+            if (i != 0 && getPriority(expr.takeToken(i - 1)) == -1 && priority == 0) //проверка на another нетерминалы assign со скобками в теле цикла
                 while (!stack.empty()) current.add(stack.pop());
             if (priority == -5) {
                 while (!stack.empty()) current.add(stack.pop());
@@ -129,7 +129,7 @@ public class Interpreter {
         }
         calculate(rpn); //подсчет нетерминала assign
     }
-    
+
     private boolean condition(LinkedList<Token> cond) {
         Stack<Token> stack = new Stack<>();
         boolean condition = false;
@@ -173,7 +173,31 @@ public class Interpreter {
     }
 
     private void rpnToAnswerIf(LinkedList<Token> rpn) {
+        LinkedList<Token> cond = new LinkedList<>();
+        LinkedList<Token> body = new LinkedList<>();
+        LinkedList<Token> bodyElse = new LinkedList<>();
+        boolean boolElse = false;
+        int indexElse = 0;
 
+        for (int i = 0; i < rpn.size(); i++) {
+            if (rpn.get(i).getType().equals("ELSE_KEYWORD")) {
+                boolElse = true;
+                indexElse = i;
+                break;
+            }
+        }
+        if (!boolElse) {
+            for (int i = 1; i < 4; i++) cond.add(rpn.get(i));
+            for (int i = 4; i < rpn.size(); i++) body.add(rpn.get(i));
+        } else {
+            for (int i = 1; i < 4; i++) cond.add(rpn.get(i));
+            for (int i = 4; i < indexElse; i++) body.add(rpn.get(i));
+            for (int i = indexElse + 1; i < rpn.size(); i++) bodyElse.add(rpn.get(i));
+        }
+
+        if (condition(cond)) calculate(body);
+        else calculate(bodyElse);
+        //System.out.println(condition(cond));
     }
 
     private int getPriority(Token i) {
@@ -186,7 +210,7 @@ public class Interpreter {
         if (i.getType().equals("L_BRACKET")) return 1;
         if (i.getType().equals("R_BRACKET")) return -1;
         if (i.getType().equals("START_BODY") || i.getType().equals("FINISH_BODY")) return -2;
-        if(i.getType().equals("ELSE_KEYWORD")) return -5;
+        if (i.getType().equals("ELSE_KEYWORD")) return -5;
         else
             return 0;
     }
