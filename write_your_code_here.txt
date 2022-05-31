@@ -1,13 +1,19 @@
-while (mun != 2) { ver = m*10; rem = w + 21;};
+//rem = w + 21;
 
 if (var == 1024) { n = n / 4} else { vlad = molo + dec };
-b= ((m -45) - (30 - p));
+//b= ((m -45) - (30 - p));
 
-num = (((100+2) - (50-22)) + 1+ 90 + b + (200 - a));
-a = 7 * 8+(100 + b);
-b = (7 + c) * a + 10 + d;
+b = 1;
+a = 2;
+
+while (b < 10) { b = 2*(b + 1); i = i + 1;};
+
+num = ((100+2) * (50-22)) + b + (200 - a);
+//b = 10;
+//a = 7 * 8+(100 + b);
+//b = (7 + c) * a + 10 + d;
 sum = 100/50;
 
-if (a >2) {d = b + 1};
+//if (a > 2) {d = 2*(b + 1); min = 22 + 1};
 
-GurLinkedList@ -> list[];
+//GurLinkedList@ -> list[];
