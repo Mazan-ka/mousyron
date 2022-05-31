@@ -201,8 +201,6 @@ public class Interpreter {
     }
 
     private int getPriority(Token i) {
-        // if(i.getType() == "WHILE_KEYWORD" || i.getType() == "FOR_KEYWORD") return 7;
-        // if(i.getType() == "IF_KEYWORD") return 6;
         if (i.getValue().toString().charAt(0) == '*' || i.getValue().toString().charAt(0) == '/') return 4;
         if (i.getValue().toString().charAt(0) == '+' || i.getValue().toString().charAt(0) == '-') return 3;
         if (i.getType().equals("OP_BOOL")) return 3;
