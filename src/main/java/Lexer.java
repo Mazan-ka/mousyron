@@ -56,6 +56,7 @@ public class Lexer {
         for (Expression s : Parser.expressions) {
             System.out.println(s);
         }
+        System.out.println();
 
         //вызов интерпретатора
         Interpreter in = new Interpreter(Parser.expressions);
